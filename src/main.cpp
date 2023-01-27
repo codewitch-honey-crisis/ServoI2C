@@ -36,7 +36,7 @@ void servo_fn_up_down(int& i, int& delta) {
   i+=delta;
 }
 void servo_fn_wobble(int& i, int& delta) {
-  if(i+delta>45 || i+delta<135) {
+  if(i+delta<45 || i+delta>135) {
     delta=-delta;
   }
   i+=delta;
@@ -45,11 +45,17 @@ void servo_fn_wobble(int& i, int& delta) {
 typedef void(*servo_fn)(int& i,int& delta);
 
 struct servo_entry {
+  // the id of the servo, 0-31
   int id;
+  // the function used to update i/position
   servo_fn fn;
+  // the period in ms between updating the position
   int period;
+  // internal timestamp
   uint32_t ts;
+  // the position indicator
   int i;
+  // the delta/step for each position movement
   int delta;
 };
 
@@ -60,8 +66,8 @@ servo_entry servos[] {
 };
 const size_t servos_count = sizeof(servos)/sizeof(servo_entry);
 
-uint32_t td = 0;  //timedaelay for motion
-
+uint32_t ts = 0;  //time stamp for changing motions
+int state = 0;
 void setup() {
 
   Serial.begin(115200);
@@ -78,6 +84,24 @@ void setup() {
 }
 
 void loop() {
+  if(millis()>ts+30*1000) {
+    ts = millis();
+    switch(state) {
+      case 0:
+      // first change
+      servos[0].fn = servo_fn_wobble;
+      servos[0].i = 90;
+      break;
+      case 1:
+      // second change
+      servos[0].fn = servo_fn_up_down;
+      servos[0].i = 0;
+      break;
+      default:
+        state = 0;
+        break;
+    }
+  }
   for(int i = 0;i<servos_count;++i) {
     servo_entry& e = servos[i];
     if(millis()>=e.ts+e.period) {
