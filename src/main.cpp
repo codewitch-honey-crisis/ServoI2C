@@ -84,20 +84,25 @@ void setup() {
 }
 
 void loop() {
-  if(millis()>ts+30*1000) {
+  if(millis()>ts+10*1000) {
     ts = millis();
     switch(state) {
       case 0:
+      Serial.println("First change");
       // first change
       servos[0].fn = servo_fn_wobble;
       servos[0].i = 90;
+      ++state;
       break;
       case 1:
+      Serial.println("Second change");
       // second change
       servos[0].fn = servo_fn_up_down;
       servos[0].i = 0;
+      ++state;
       break;
       default:
+        Serial.println("Reset state");
         state = 0;
         break;
     }
@@ -108,7 +113,7 @@ void loop() {
       e.ts = millis();
       int duty = map(e.i,0,180,SERVOMIN,SERVOMAX);
       pwms[e.id/16].setPWM(e.id%16,0,duty);
-      Serial.printf("id: %d, i: %d\n",e.id,e.i);
+      //Serial.printf("id: %d, i: %d\n",e.id,e.i);
       e.fn(e.i,e.delta);
     }
   }
