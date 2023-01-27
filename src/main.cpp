@@ -99,10 +99,11 @@ void loop() {
       // second change
       servos[0].fn = servo_fn_up_down;
       servos[0].i = 0;
-      ++state;
+      // reset state
+      state=0;
       break;
       default:
-        Serial.println("Reset state");
+        Serial.println("Default hit: Reset state");
         state = 0;
         break;
     }
